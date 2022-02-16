@@ -1,0 +1,10 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ .Values.shutdownPodCleaner.saName }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+  {{- include "common.labels" . | indent 4 }}
+  annotations:
+  {{- include "common.annotations" . | indent 4 }}

@@ -1,0 +1,43 @@
+---
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: del-shutdown-pods
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+  {{- include "common.labels" . | indent 4 }}
+  annotations:
+  {{- include "common.annotations" . | indent 4 }}
+spec:
+  schedule: "{{ .Values.shutdownPodCleaner.schedule }}"
+  successfulJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+          {{- include "common.labels" . | indent 12 }}
+          annotations:
+          {{- include "common.annotations" . | indent 12 }}
+        spec:
+          volumes:
+            - name: scripts
+              configMap:
+                name: shutdown-pods-scripts
+                defaultMode: 0777
+          serviceAccountName: {{ .Values.shutdownPodCleaner.saName }}
+          containers:
+            - name: zombie-killer
+              image: bitnami/kubectl
+              imagePullPolicy: IfNotPresent
+              command:
+                - "/bin/sh"
+              args:
+                - "-c"
+                - "/scripts/podCleaner.sh"
+              volumeMounts:
+                - name: scripts
+                  mountPath: "/scripts"
+                  readOnly: true
+          restartPolicy: OnFailure
+

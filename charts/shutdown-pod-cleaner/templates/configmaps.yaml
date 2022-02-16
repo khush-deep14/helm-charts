@@ -1,0 +1,19 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: shutdown-pods-scripts
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+  {{- include "common.labels" . | indent 4 }}
+  annotations:
+  {{- include "common.annotations" . | indent 4 }}
+data:
+  podCleaner.sh: |
+    #!/bin/sh
+    if [ $(kubectl get pods --all-namespaces --ignore-not-found=true | grep Shutdown | wc -l) -ge 1 ]
+    then
+    kubectl get pods -A | grep Shutdown | awk '{print $1,$2}' | xargs -n2 sh -c 'kubectl delete pod -n $0 $1 --ignore-not-found=true'
+    else
+    echo "no shutdown pods to clean"
+    fi
