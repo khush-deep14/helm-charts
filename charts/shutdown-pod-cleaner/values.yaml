@@ -1,0 +1,5 @@
+shutdownPodCleaner:
+  # -- Cronjob schedule for pod cleaner
+  schedule: "* */2 * * *"
+  # -- Service account name
+  saName: shutdown-pod-sa
